@@ -1,0 +1,9 @@
+RewriteEngine On
+
+RewriteRule ^$ index.html [QSA]
+RewriteRule ^([^.]+)$ $1.html [QSA]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ app.php [QSA,L]
+
+# In case of errors
+ErrorDocument 500 "FATAL ERROR OF DEATH"

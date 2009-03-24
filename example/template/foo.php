@@ -1,0 +1,3 @@
+This is template <?php echo $v['file'] ?>
+
+blablabla, you can write PHP in there...
