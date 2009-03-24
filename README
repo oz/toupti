@@ -15,7 +15,7 @@ Toupti's goals are modest:
 How to start with toupti?
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The example/public directory contains a app.php file, and an .htaccess
+The example/public directory contains an app.php file, and an .htaccess
 you can use as templates to setup a local apache vhost.  I recommend
 the following directory tree :
 
@@ -113,7 +113,7 @@ Fun with routing?
         $routes = array(... ,
                         'say/:what/to/:recipient' => 'dialogue');
 
-    Which will map "/say/somthing/to/someone" to the dialogue action.
+    Which will map "/say/something/to/someone" to the dialogue action.
     Furthermore in dialogue you can access the named parameters through
     the params attribute:
 
@@ -133,7 +133,7 @@ Fun with routing?
                     'say/*/to/*' => 'dialogue');
 
     This will map any URL starting with "say/" followed
-    by other text, followed by "to/", followed by sometext.
+    by other text, followed by "to/", followed by some more text.
 
     Every-thing matched in betweem "say" and "to" is push in the
     $this->params['splat'] array. So :
@@ -154,7 +154,7 @@ Fun with routing?
 * Named routes with custom regexes
 
     Named routes are fun, but can be too strict at times. What if you
-    want to strictly map an numerical ID to your fetch_answer action?
+    want to map a numerical ID to your fetch_answer action?
 
     Well you'd write:
 
@@ -174,13 +174,13 @@ Fun with routing?
                                             ':bar' => 'bar|baz|quux')
                         );
 
-    To match either:
-        * /foo/bar
-        * /foo/baz
-        * /foo/quux
+    To match either of these paths to the 'do_foo' action:
+        - /foo/bar
+        - /foo/baz
+        - /foo/quux
 
 
-    And since it's only fair that you can also to strange things, it is
+    And since it's only fair that you can also do strange things, it is
     possible to map the route action option to a named param:
 
         $routes = array(...,
@@ -190,8 +190,14 @@ Fun with routing?
                         );
 
     This will map:
-        * /foo/edit/42    to the edit   action with params['id'] == 42.
-        * /foo/delete/42  to the delete action with params['id'] == 42.
+        - /foo/edit/42    to the edit   action with params['id'] == 42.
+        - /foo/delete/42  to the delete action with params['id'] == 42.
+
+
+
+One extremly important thing to remember is that routes are matched from
+top to bottom, and that the first that fits is the only one that will
+fire.
 
 
 Action filters
@@ -216,14 +222,13 @@ Templates
 
 Toupti sets a $template directory relative to your main class path, to
 hold a few files you want to use as templated documents. The render
-method if given a filename will search this directory for a PHP file
-with that name or just render the text you've passed it.
+method, when given a filename, will search this directory for a PHP file
+with that filename, or just render the text you've passed it.
 
 To force the rendering of a file, and the creation of an error if it is
 missing, use: render(array('file' => 'somefile')). All keys of
-the array passed to render will be available in the view through the $v
-array. So you will always get $v['file'] inside a view.
+the array passed to render() will be available in the view through the $v
+array.  So you will always get $v['file'] inside a view.
 
 
-
-That's about it. :)
+That's about it.  Thank you for reading. :)
