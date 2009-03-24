@@ -22,7 +22,7 @@ class App extends Toupti
                                      ':baz'   => 'plop|foo|index'),
         'foo4/:bar/:baz'    => array('action' => 'foo'),     // You can match several named params with custom regexps
         'say/:what/to/:who' => 'dialogue',                  // matches hello/\w+/to/\w+
-        'say/*/to/*'        => 'dialogue',                  // matches hello/.*/to/.* and store into params['slpat'] array
+        'say/*/to/*'        => 'dialogue',                  // matches hello/.*/to/.* and store into params['splat'] array
         'say/:what/to/*'    => 'dialogue',                  // combining splat and named params works too...
         ':action'           => ':action',
     );
