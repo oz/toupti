@@ -1,0 +1,229 @@
+Toupti
+~~~~~~
+
+Toupti (pronounced toop-tee) is a micro-framework for PHP5;
+
+I'm not sure what the world needs right now is another framework,
+furthermore a PHP micro-framework, but it is a fun experiment. :)
+
+Toupti's goals are modest:
+    - don't get in the way
+    - be fast
+    - be fun
+
+
+How to start with toupti?
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The example/public directory contains a app.php file, and an .htaccess
+you can use as templates to setup a local apache vhost.  I recommend
+the following directory tree :
+
+    my_new_app/
+        public/
+            .htaccess
+            app.php
+        lib/
+            toupti.php
+        templates/
+            a_view_file.php
+            another_view.php
+
+
+And the following Apache vhost should do the trick :
+
+    <VirtualHost toupti>
+        ServerName toupti
+        ServerAdmin foobar@example.com
+
+        DocumentRoot /path/to/my_new_app/public
+        <Directory /path/to/my_new_app/public>
+            Options All
+            AllowOverride All
+            Order deny,allow
+            allow from 127.0.0.1
+        </Directory>
+    </VirtualHost>
+
+
+Ok, but how does it work?
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The basics
+----------
+
+Toupti is trying to do the right thing -- most of the time; this
+does mean that we have to agree on what is the right thing to do.
+
+Toupti works from your existing PHP class, provided it extends the
+Toupti class, and then maps all of its public methods to URL paths. 
+
+Let's write the following app.php :
+
+    <?php
+    require '../lib/toupti.php';
+
+    class App extends Toupti
+    {
+        public function index()
+        {
+            $this->render("hello, world!");
+        }
+    }
+
+    $toupti = new App();
+    $toupti->run();
+    ?>
+
+That's about it, if you've setup a local vhost, accessing http://toupti/
+will render the text "Hello, world!". "index" is the default "root"
+action.
+
+If you add another action, to your App class, say :
+
+    public function foobar()
+    {
+        // ...
+    }
+
+Then Toupti will map http://toupti/foobar to this action...
+
+
+Fun with routing?
+-----------------
+
+* The default setup
+
+    Toupti provides a simple, yet flexible routing engine. It is configured
+    through the $routes array, that you can (should) override to provide
+    better routes in your application.
+
+    The default $routes array is:
+
+        $routes = array(''        => 'index',
+                        ':action' => ':action');
+
+    The first line maps the path "/" to your action "index".
+    The second line maps the path "/:whatever" to your action ":whatever".
+
+* Simple named routes
+
+    You can define more complex routes like:
+
+        $routes = array(... ,
+                        'say/:what/to/:recipient' => 'dialogue');
+
+    Which will map "/say/somthing/to/someone" to the dialogue action.
+    Furthermore in dialogue you can access the named parameters through
+    the params attribute:
+
+        public function dialogue()
+        {
+            $this->params['what'] == 'something';       // true
+            $this->params['recipient'] == 'someone';    // true
+        }
+
+    Named parameters must strictly match the alphanumeric regex pattern
+    (that is \w for you).
+
+
+* Routes with splat params
+
+    $routes = array(...,
+                    'say/*/to/*' => 'dialogue');
+
+    This will map any URL starting with "say/" followed
+    by other text, followed by "to/", followed by sometext.
+
+    Every-thing matched in betweem "say" and "to" is push in the
+    $this->params['splat'] array. So :
+
+        For:     /say/rise/to/lord/vader
+        You get: $this->params['splat'] == array('rise', 'lord/vader');
+
+        For:     /say/rise/to/
+        You get: $this->params['splat'] == array('rise', '');
+
+        For:     /say/what/tooooo
+        You get: 404 error
+
+        For:     /say/meh/to
+        You get: 404 error
+
+
+* Named routes with custom regexes
+
+    Named routes are fun, but can be too strict at times. What if you
+    want to strictly map an numerical ID to your fetch_answer action?
+
+    Well you'd write:
+
+        $routes = array(...,
+                        'fetch_answer/:id' => array('action' => 'fetch_answer',
+                                                    ':id' => '\d+')
+                        );
+
+    So /fetch_answer/42 will lead you to the fetch_answer() action, but
+    /fetch_answer/fail will only lead you to a 404 error...
+
+
+    While we're at it, you can write things like :
+
+        $routes = array(...,
+                        'foo/:bar' => array('action' => 'do_foo',
+                                            ':bar' => 'bar|baz|quux')
+                        );
+
+    To match either:
+        * /foo/bar
+        * /foo/baz
+        * /foo/quux
+
+
+    And since it's only fair that you can also to strange things, it is
+    possible to map the route action option to a named param:
+
+        $routes = array(...,
+                        'foo/:bar/:baz' => array('action' => ':bar',
+                                                 ':bar'   => 'edit|delete',
+                                                 ':baz'   => '\d+')
+                        );
+
+    This will map:
+        * /foo/edit/42    to the edit   action with params['id'] == 42.
+        * /foo/delete/42  to the delete action with params['id'] == 42.
+
+
+Action filters
+--------------
+
+For each action taken, Toupti looks for filters to call around your
+action, so if a route matched the action "frobnitz", the call chain will
+be :
+
+    - before_action
+    - before_frobnitz
+    - frobnitz
+    - after_frobnitz
+    - after_action
+
+So yes, having an action named "action" is a silly thing.  Please,
+don't.
+
+
+Templates
+---------
+
+Toupti sets a $template directory relative to your main class path, to
+hold a few files you want to use as templated documents. The render
+method if given a filename will search this directory for a PHP file
+with that name or just render the text you've passed it.
+
+To force the rendering of a file, and the creation of an error if it is
+missing, use: render(array('file' => 'somefile')). All keys of
+the array passed to render will be available in the view through the $v
+array. So you will always get $v['file'] inside a view.
+
+
+
+That's about it. :)
